@@ -52,6 +52,8 @@ light surfaces — and the bar glyph stands in when there is none.
 
 | Collector | Limits | Local stats |
 |---|---|---|
+| `antigravity` | Context window quota and active model token utilization | `~/.gemini/antigravity-cli/conversations` SQLite databases, protobuf generation metadata, and transcripts |
+| `pi` | Active session context window usage and model definitions | `~/.pi/agent/sessions` JSONL session files, `~/.pi/agent/models.json` |
 | `claude` | Anthropic's OAuth usage endpoint (5-hour session + 7-day weekly) | `~/.claude/projects` transcripts, opencode sessions on an Anthropic provider, plus `stats-cache.json` and `history.jsonl` as fallback |
 | `codex` | The Codex app-server RPC | native Codex CLI session files (plus pi and opencode sessions) |
 | `fireworks` | Estimated prepaid balance: configured funding minus rated account costs | Fireworks billing API, grouped by day and model for the last 30 days |
