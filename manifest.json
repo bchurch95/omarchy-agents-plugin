@@ -24,6 +24,12 @@
     "allowMultiple": false,
     "defaults": {
       "providers": {
+        "antigravity": {
+          "enabled": true
+        },
+        "pi": {
+          "enabled": true
+        },
         "claude": {
           "enabled": true
         },

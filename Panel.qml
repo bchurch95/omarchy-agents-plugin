@@ -7,8 +7,8 @@ import qs.Ui
 
 Panel {
   id: root
-  moduleName: "omarchy.agents"
-  ipcTarget: "omarchy.agents"
+  moduleName: "ben.agents"
+  ipcTarget: "ben.agents"
   manageIpc: false
 
   readonly property color foreground: bar ? bar.foreground : Color.foreground
@@ -60,7 +60,14 @@ Panel {
   }
 
   function launchAgent() {
-    if (root.bar) root.bar.run("omarchy-agent --pick")
+    var p = root.provider
+    if (p && p.providerId === "antigravity") {
+      if (root.bar) root.bar.run("agy")
+    } else if (p && p.providerId === "pi") {
+      if (root.bar) root.bar.run("pi")
+    } else {
+      if (root.bar) root.bar.run("omarchy-agent --pick")
+    }
     root.close()
   }
 
@@ -101,11 +108,12 @@ Panel {
   // and that beats reading it back out of the label: a model-scoped limit is
   // titled after its model, and a name like "Opus 5 (1M context)" would parse
   // as a one-minute window.
-  function limitWindow(label, percent, resetAt, title) {
+  function limitWindow(label, percent, resetAt, title, detail) {
     return {
       title: String(title || "") !== "" ? String(title) : windowTitle(label),
       percent: Number(percent),
-      resetAt: String(resetAt || "")
+      resetAt: String(resetAt || ""),
+      detail: String(detail || "")
     }
   }
 
@@ -116,7 +124,7 @@ Panel {
     for (var i = 0; i < list.length; i++) {
       var entry = list[i] || {}
       var percent = Number(entry.percent)
-      if (percent >= 0) out.push(limitWindow(entry.label, percent, entry.resetsAt, entry.title))
+      if (percent >= 0) out.push(limitWindow(entry.label, percent, entry.resetsAt, entry.title, entry.detail))
     }
     return out
   }
@@ -833,8 +841,11 @@ Panel {
       width: parent.width
       text: {
         var remainingMs = root.resetMsFor(limitRow.window)
-        return remainingMs > 0 ? "Resets in " + root.formatDuration(remainingMs) : ""
+        if (remainingMs > 0) return "Resets in " + root.formatDuration(remainingMs)
+        if (limitRow.window && limitRow.window.detail) return limitRow.window.detail
+        return ""
       }
+      visible: text !== ""
       color: root.dim
       font.family: root.fontFamily
       font.pixelSize: Style.font.caption
