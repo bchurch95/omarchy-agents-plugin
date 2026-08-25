@@ -38,9 +38,23 @@
       "syncMode": "Off",
       "syncDir": "",
       "syncFileName": "",
-      "syncDeviceId": ""
+      "syncDeviceId": "",
+      "barFormat": "Limits"
     },
     "schema": [
+      {
+        "key": "barFormat",
+        "type": "enum",
+        "label": "Toolbar format",
+        "options": [
+          "Limits",
+          "Tokens",
+          "Both",
+          "Icon"
+        ],
+        "defaultValue": "Limits",
+        "description": "What to display on the bar button: rate limit percentage(s), today's token count, both, or icon only."
+      },
       {
         "key": "refreshIntervalSec",
         "type": "integer",

@@ -94,7 +94,7 @@ only adds the meter and the spent-of-funded line under the real figure.
 
 ## Interactions
 
-- Bar icon: left = panel, right = launch agent, middle = next subscription.
+- Bar button: shows active token usage limits / balance, with rich tooltip on hover. Left click = toggle panel, right click = launch agent, middle click or mouse wheel = next/prev subscription.
 - Panel: `h`/`l` switch subscription, `j`/`k` scroll, `r` or Enter refresh,
   Tab moves to the neighboring bar panel, Esc closes.
 - IPC: `omarchy-shell omarchy.agents <open|close|toggle|refresh|next>`.
@@ -107,6 +107,7 @@ top-level keys can be set with
 
 | Key | Default | What it does |
 |---|---|---|
+| `barFormat` | `"Limits"` | What to display on the bar button: `"Limits"`, `"Tokens"`, `"Both"`, or `"Icon"` |
 | `refreshIntervalSec` | `900` | How often the usage records regenerate |
 | `syncMode` | `"Off"` | `"On"` writes this machine's snapshot and merges the others |
 | `syncDir` | `""` | A folder synced by Syncthing, Dropbox, rsync, … |

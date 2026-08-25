@@ -294,6 +294,84 @@ Panel {
     return candidates
   }
 
+  function setting(name, fallback) {
+    var value = root.settings ? root.settings[name] : undefined
+    return value === undefined || value === null ? fallback : value
+  }
+
+  readonly property string barFormat: String(setting("barFormat", "Limits")).toLowerCase()
+
+  function barLimitsText() {
+    if (!root.provider) return ""
+    if (root.limits && root.limits.length > 0) {
+      var parts = []
+      for (var i = 0; i < root.limits.length; i++) {
+        var w = root.limits[i]
+        if (w && w.percent >= 0)
+          parts.push(Math.round(w.percent * 100) + "%")
+      }
+      if (parts.length > 0) return parts.join(" · ")
+    }
+    if (root.balance) {
+      return root.formatMoney(root.balance.remaining, root.balance.currency)
+    }
+    return ""
+  }
+
+  function barText() {
+    if (root.bar && root.bar.vertical) return "󱚣"
+    if (barFormat === "icon") return "󱚣"
+    if (barFormat === "tokens") {
+      if (root.provider && root.provider.todayTotalTokens > 0)
+        return "󱚣  " + usage.formatTokenCount(root.provider.todayTotalTokens)
+      var lims = barLimitsText()
+      return lims !== "" ? "󱚣  " + lims : "󱚣"
+    }
+    if (barFormat === "both") {
+      var lim = barLimitsText()
+      var tok = root.provider && root.provider.todayTotalTokens > 0 ? usage.formatTokenCount(root.provider.todayTotalTokens) : ""
+      if (tok !== "" && lim !== "") return "󱚣  " + tok + " · " + lim
+      if (lim !== "") return "󱚣  " + lim
+      if (tok !== "") return "󱚣  " + tok
+      return "󱚣"
+    }
+    // Default: "limits"
+    var limText = barLimitsText()
+    if (limText !== "") return "󱚣  " + limText
+    if (root.provider && root.provider.todayTotalTokens > 0)
+      return "󱚣  " + usage.formatTokenCount(root.provider.todayTotalTokens)
+    return "󱚣"
+  }
+
+  function barTooltipText() {
+    if (!root.provider) return "AI Agents"
+    var p = root.provider
+    var lines = []
+    lines.push(p.providerName + (root.heroMeta(p) ? " (" + root.heroMeta(p) + ")" : ""))
+    if (root.limits && root.limits.length > 0) {
+      for (var i = 0; i < root.limits.length; i++) {
+        var w = root.limits[i]
+        var str = w.title + ": " + Math.round(w.percent * 100) + "%"
+        var remMs = root.resetMsFor(w)
+        if (remMs > 0) str += " (resets in " + root.formatDuration(remMs) + ")"
+        lines.push(str)
+      }
+    }
+    if (root.balance) {
+      lines.push("Balance: " + root.formatMoney(root.balance.remaining, root.balance.currency) + (root.balanceDetailText(root.balance) ? " · " + root.balanceDetailText(root.balance) : ""))
+    }
+    if (p.todayTotalTokens > 0 || p.todayPrompts > 0) {
+      var tokStr = "Today: " + usage.formatTokenCount(p.todayTotalTokens) + " tokens"
+      if (p.hasPromptStats !== false && (p.todayPrompts > 0 || p.todaySessions > 0)) {
+        tokStr += " · " + Number(p.todayPrompts || 0) + " prompts · " + Number(p.todaySessions || 0) + " sessions"
+      }
+      lines.push(tokStr)
+    }
+    return lines.join(" · ")
+  }
+
+  readonly property real openPanelIndicatorWidth: button.labelWidth
+
   // Nothing to report, nothing in the bar: Bar.qml collapses a slot whose item
   // is invisible, so the icon appears the moment the first scan finds usage and
   // stays away entirely on a machine that has never run either CLI.
@@ -335,16 +413,24 @@ Panel {
     function next(): string { root.selectProvider(root.providerIndex + 1); return "ok" }
   }
 
-  BarIconButton {
+  WidgetButton {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: "󱚣"
+    text: root.barText()
+    fontSize: Style.font.bodySmall
     active: root.alarming
+    tooltipText: root.barTooltipText()
+    horizontalMargin: 8.5
+
     onPressed: function(buttonCode) {
       if (buttonCode === Qt.RightButton) root.launchAgent()
       else if (buttonCode === Qt.MiddleButton) root.selectProvider(root.providerIndex + 1)
       else root.toggle()
+    }
+    onWheelMoved: function(delta) {
+      if (delta !== 0 && root.providers.length > 1)
+        root.selectProvider(root.providerIndex + (delta < 0 ? 1 : -1))
     }
   }
 
