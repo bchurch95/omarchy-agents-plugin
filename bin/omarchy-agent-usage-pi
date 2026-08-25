@@ -327,7 +327,7 @@ def main() -> int:
 
   max_age = 0 if args.force else (LIMITS_ONLY_REUSE_SECONDS if args.limits_only else args.cache_seconds)
   stats, runtime = cached_stats(max_age)
-  limits = build_limits(runtime)
+  limits: list[dict[str, Any]] = []
 
   latest_model = runtime.get("latest_model", "qwen-27b")
   models_meta = runtime.get("models_meta", {})
