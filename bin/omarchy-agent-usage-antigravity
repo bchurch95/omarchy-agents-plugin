@@ -403,22 +403,52 @@ def cached_stats(max_age: float) -> tuple[dict[str, Any], dict[str, Any]]:
     return scan_sqlite_conversations(base)
 
 
-def build_limits(runtime: dict[str, Any]) -> list[dict[str, Any]]:
+def format_tokens(n: float | int) -> str:
+  n = float(n)
+  if n >= 1e9:
+    return f"{n / 1e9:.1f}B"
+  if n >= 1e6:
+    return f"{n / 1e6:.1f}M"
+  if n >= 1e3:
+    return f"{n / 1e3:.1f}k"
+  return str(int(n))
+
+
+def build_limits(runtime: dict[str, Any], stats: dict[str, Any]) -> list[dict[str, Any]]:
   limits = []
-  quota_info = runtime.get("quota_info") or {}
-  ctx_used = quota_info.get("context_used", 0)
-  ctx_max = quota_info.get("context_max", 0)
-  if ctx_max > 0:
-    pct = min(1.0, max(0.0, float(ctx_used) / float(ctx_max)))
-    label_k = f"{ctx_max // 1000}k" if ctx_max >= 1000 else str(ctx_max)
-    used_k = f"{ctx_used // 1000}k" if ctx_used >= 1000 else str(ctx_used)
-    limits.append({
-      "label": f"Context ({label_k})",
-      "title": "Context",
-      "percent": round(pct, 4),
-      "resetsAt": "",
-      "detail": f"{used_k} / {label_k} tokens ({round(pct * 100, 1)}%)",
-    })
+
+  # Rolling 7-day average daily quota / pace
+  recent_days = stats.get("recentDays", [])
+  today_str = local_date_string()
+  past_active = [
+    d["messageCount"]
+    for d in recent_days
+    if isinstance(d, dict) and d.get("date") != today_str and (d.get("messageCount") or 0) > 0
+  ]
+
+  today_tokens = stats.get("todayTotalTokens", 0)
+
+  if past_active:
+    avg_tokens = sum(past_active) / len(past_active)
+  elif today_tokens > 0:
+    avg_tokens = float(today_tokens)
+  else:
+    avg_tokens = 100_000_000.0
+
+  pct = min(1.0, float(today_tokens) / float(avg_tokens)) if avg_tokens > 0 else 0.0
+
+  now = dt.datetime.now().astimezone()
+  midnight = (now.replace(hour=0, minute=0, second=0, microsecond=0) + dt.timedelta(days=1)).isoformat()
+
+  pct_disp = round((float(today_tokens) / float(avg_tokens) * 100), 1) if avg_tokens > 0 else 0.0
+  limits.append({
+    "label": f"Daily Pace (7d avg {format_tokens(avg_tokens)})",
+    "title": "Daily Pace",
+    "percent": round(pct, 4),
+    "resetsAt": midnight,
+    "detail": f"{format_tokens(today_tokens)} / {format_tokens(avg_tokens)} tokens ({pct_disp}% of 7d avg)",
+  })
+
   return limits
 
 
@@ -431,7 +461,7 @@ def main() -> int:
 
   max_age = 0 if args.force else (LIMITS_ONLY_REUSE_SECONDS if args.limits_only else args.cache_seconds)
   stats, runtime = cached_stats(max_age)
-  limits = build_limits(runtime)
+  limits = build_limits(runtime, stats)
 
   model_label = runtime.get("latest_model", "Gemini 3.7 Flash")
   tier_label = model_label.replace("gemini-", "Gemini ").replace("-", " ").title()
