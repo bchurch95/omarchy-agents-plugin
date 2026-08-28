@@ -143,8 +143,11 @@ Item {
     }
   }
 
+  readonly property string pluginBinPath: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/omarchy/plugins/ben.agents/bin/omarchy-agent-usage-update"
+
   function updateCommand(kind, agentIds) {
-    var command = ["omarchy-agent-usage-update"]
+    var updater = pluginBinPath
+    var command = [updater]
     if (kind === "force") command.push("--force")
     if (kind === "limits") command.push("--limits-only")
     var providers = settings && settings.providers ? settings.providers : {}

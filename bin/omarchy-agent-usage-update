@@ -54,8 +54,8 @@ collect() {
 pids=()
 declare -A seen_agents
 
-# Search user's ~/.local/bin first, then system omarchy bin, then /usr/bin
-for dir in "$HOME/.local/bin" "${OMARCHY_PATH:-/usr/share/omarchy}/bin" "/usr/bin"; do
+# Search plugin bin directories, user's ~/.local/bin, system omarchy bin, and /usr/bin
+for dir in "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/plugins/"*/bin "$HOME/.local/bin" "${OMARCHY_PATH:-/usr/share/omarchy}/bin" "/usr/bin"; do
   [[ -d $dir ]] || continue
   for collector in "$dir"/omarchy-agent-usage-*; do
     [[ -x $collector ]] || continue

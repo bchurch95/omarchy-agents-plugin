@@ -44,7 +44,7 @@ Panel {
   // last 10% of the funded credits lights the same alarm.
   readonly property bool balanceAlarming: !!balance && balance.funded > 0
     && balance.remaining / balance.funded <= 0.1
-  readonly property bool alarming: (!!headline && headline.percent >= 0.9) || balanceAlarming
+  readonly property bool alarming: (!!headline && headline.percent >= 0.9 && headline.resetAt !== "") || balanceAlarming
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
   function alpha(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
@@ -315,8 +315,11 @@ Panel {
       var parts = []
       for (var i = 0; i < root.limits.length; i++) {
         var w = root.limits[i]
-        if (w && w.percent >= 0)
-          parts.push(Math.round(w.percent * 100) + "%")
+        if (w && w.percent >= 0) {
+          var isCtx = w.title === "Context" || w.title === "Context Window"
+          var label = isCtx ? "Ctx " : ""
+          parts.push(label + Math.round(w.percent * 100) + "%")
+        }
       }
       if (parts.length > 0) return parts.join(" · ")
     }
