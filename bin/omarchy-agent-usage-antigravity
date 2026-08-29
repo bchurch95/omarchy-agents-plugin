@@ -29,8 +29,8 @@ AGENT_ID = "antigravity"
 AGENT_NAME = "Antigravity"
 AUTH_HELP = "Run `agy` to start a session."
 
-SCAN_REUSE_SECONDS = 20
-LIMITS_ONLY_REUSE_SECONDS = 900
+SCAN_REUSE_SECONDS = 5
+LIMITS_ONLY_REUSE_SECONDS = 15
 
 
 def cache_root() -> Path:

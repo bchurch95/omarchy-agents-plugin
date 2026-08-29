@@ -110,7 +110,7 @@ top-level keys can be set with
 | Key | Default | What it does |
 |---|---|---|
 | `barFormat` | `"Limits"` | What to display on the bar button: `"Limits"`, `"Tokens"`, `"Both"`, or `"Icon"` |
-| `refreshIntervalSec` | `900` | How often the usage records regenerate |
+| `refreshIntervalSec` | `60` | How often the usage records regenerate |
 | `syncMode` | `"Off"` | `"On"` writes this machine's snapshot and merges the others |
 | `syncDir` | `""` | A folder synced by Syncthing, Dropbox, rsync, … |
 | `syncFileName` | `<hostname>.json` | This machine's snapshot file |

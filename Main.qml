@@ -114,7 +114,7 @@ Item {
 
   // -------------------------------------------------------------- refresh
 
-  property int refreshIntervalSec: Math.max(30, Number(setting("refreshIntervalSec", 900)))
+  property int refreshIntervalSec: Math.max(10, Number(setting("refreshIntervalSec", 60)))
   property string pendingUpdateKind: ""
 
   Timer {

@@ -395,7 +395,7 @@ Panel {
     cursorActive = false
     nowMs = Date.now()
     if (panelFlick) panelFlick.contentY = 0
-    usage.refreshLimits()
+    usage.refreshNow()
     Qt.callLater(function() { keyCatcher.forceActiveFocus() })
   }
 
@@ -404,13 +404,16 @@ Panel {
     settings: root.settings
   }
 
-  // Cheap enough to keep running: it only re-evaluates text bindings, and a
-  // stale "resets in 2h" on a panel that is open is worse than a timer.
+  // Cheap enough to keep running: it re-evaluates text bindings and keeps
+  // numbers fresh while the panel stays open.
   Timer {
     interval: 30000
     running: root.opened
     repeat: true
-    onTriggered: root.nowMs = Date.now()
+    onTriggered: {
+      root.nowMs = Date.now()
+      usage.refreshAll(false)
+    }
   }
 
   IpcHandler {
